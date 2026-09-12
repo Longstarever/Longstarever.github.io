@@ -913,44 +913,54 @@ function renderEditList() {
         // --- 5. 背景壁纸缓存与静默更新 ---
        // --- 5. 背景壁纸每日静默更新 ---
         function checkDailyBackground() {
-            const cacheKey = 'kaltsit_bg_url';
-            const dateKey = 'kaltsit_bg_date';
-            
-            // 获取今天的日期字符串，例如 "Fri May 15 2026"
-            const today = new Date().toDateString(); 
-            const lastUpdate = localStorage.getItem(dateKey);
-            const cachedUrl = localStorage.getItem(cacheKey);
+    const cacheKey = 'kaltsit_bg_url';
+    const dateKey = 'kaltsit_bg_date';
 
-            // 如果今天没初始化过，或者发现跨天了，才去请求 API
-            if (!cachedUrl || lastUpdate !== today) {
-                const bingApi = 'https://cn.bing.com/HPImageArchive.aspx?format=js&idx=0&n=1';
-                fetch(`https://api.allorigins.win/get?url=${encodeURIComponent(bingApi)}`)
-                    .then(res => res.json())
-                    .then(data => {
-                        const parsed = JSON.parse(data.contents);
-                        const realUrl = 'https://cn.bing.com' + parsed.images[0].url;
+    const today = new Intl.DateTimeFormat('en-CA', {
+        timeZone: 'Asia/Shanghai',
+        year: 'numeric',
+        month: '2-digit',
+        day: '2-digit'
+    }).format(new Date());
 
-                        // 如果发现直链确实变了（有新壁纸）
-                        if (realUrl !== cachedUrl) {
-                            const preloadImg = new Image();
-                            preloadImg.src = realUrl;
-                            preloadImg.onload = () => {
-                                // 赋予渐变属性，让新老壁纸平滑过渡
-                                document.body.style.transition = 'background-image 1s ease-in-out';
-                                document.body.style.backgroundImage = `url('${realUrl}')`;
-                                
-                                // 更新缓存和日期
-                                localStorage.setItem(cacheKey, realUrl);
-                                localStorage.setItem(dateKey, today);
-                            };
-                        } else {
-                            // 即使壁纸没变，也把日期更新为今天，防止今天内重复请求
-                            localStorage.setItem(dateKey, today);
-                        }
-                    })
-                    .catch(err => console.warn('背景同步检查失败:', err));
-            }
-        }
+    const lastUpdate = localStorage.getItem(dateKey);
+    const cachedUrl = localStorage.getItem(cacheKey);
+
+    if (!cachedUrl || lastUpdate !== today) {
+
+        const bingApi =
+            'https://cn.bing.com/HPImageArchive.aspx' +
+            '?format=js&idx=0&n=1&mkt=zh-CN';
+
+        fetch(
+            `https://api.allorigins.win/get?url=${encodeURIComponent(bingApi)}`
+        )
+        .then(res => res.json())
+        .then(data => {
+            const parsed = JSON.parse(data.contents);
+
+            // 获取 Bing UHD / 4K 版本
+            const realUrl =
+                'https://cn.bing.com' +
+                parsed.images[0].urlbase +
+                '_UHD.jpg';
+
+            const preloadImg = new Image();
+            preloadImg.src = realUrl;
+
+            preloadImg.onload = () => {
+                document.body.style.backgroundImage =
+                    `url('${realUrl}')`;
+
+                localStorage.setItem(cacheKey, realUrl);
+                localStorage.setItem(dateKey, today);
+            };
+        })
+        .catch(err => {
+            console.warn('背景同步检查失败:', err);
+        });
+    }
+}
 
         checkDailyBackground();
     </script>
