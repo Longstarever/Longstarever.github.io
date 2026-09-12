@@ -153,7 +153,48 @@
         .icon-item:hover .icon-circle {
             background: rgba(255, 255, 255, 0.4); box-shadow: 0 8px 20px rgba(0,0,0,0.3);
         }
+/* 自定义图标提示框 */
+.icon-tooltip {
+    position: fixed;
 
+    padding: 6px 10px;
+
+    color: #fff;
+    font-size: 13px;
+    line-height: 1.2;
+
+    background: rgba(20, 20, 20, 0.72);
+
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+
+    border: 1px solid rgba(255,255,255,0.18);
+    border-radius: 7px;
+
+    box-shadow: 0 4px 15px rgba(0,0,0,0.25);
+
+    pointer-events: none;
+
+    opacity: 0;
+    visibility: hidden;
+
+    transform: translateY(3px);
+
+    transition:
+        opacity 0.12s ease,
+        transform 0.12s ease,
+        visibility 0.12s;
+
+    z-index: 1000;
+
+    white-space: nowrap;
+}
+
+.icon-tooltip.show {
+    opacity: 1;
+    visibility: visible;
+    transform: translateY(0);
+}
 /* --- 3. 设置组件：毛玻璃风格 --- */
 
 /* 右下角设置按钮 */
@@ -750,18 +791,78 @@ body {
         ];
         let links = JSON.parse(localStorage.getItem('myLinks')) || defaultLinks;
         const container = document.getElementById('iconContainer');
+        // --- 自定义图标悬停提示 ---
+
+const tooltip = document.createElement('div');
+tooltip.className = 'icon-tooltip';
+document.body.appendChild(tooltip);
+
+function showTooltip(e) {
+    const item = e.currentTarget;
+
+    tooltip.textContent = item.dataset.tooltip;
+    tooltip.classList.add('show');
+
+    moveTooltip(e);
+}
+
+function moveTooltip(e) {
+    const offsetX = 12;
+    const offsetY = 12;
+
+    let x = e.clientX + offsetX;
+    let y = e.clientY + offsetY;
+
+    // 防止提示框超出浏览器右侧
+    const tooltipWidth = tooltip.offsetWidth;
+    const tooltipHeight = tooltip.offsetHeight;
+
+    if (x + tooltipWidth > window.innerWidth - 8) {
+        x = e.clientX - tooltipWidth - offsetX;
+    }
+
+    // 防止提示框超出浏览器底部
+    if (y + tooltipHeight > window.innerHeight - 8) {
+        y = e.clientY - tooltipHeight - offsetY;
+    }
+
+    tooltip.style.left = `${x}px`;
+    tooltip.style.top = `${y}px`;
+}
+
+function hideTooltip() {
+    tooltip.classList.remove('show');
+}
         const editList = document.getElementById('editList');
         const modal = document.getElementById('settingsModal');
 
-        function renderIcons() {
-            container.innerHTML = '';
-            links.forEach(link => {
-                const a = document.createElement('a');
-                a.className = 'icon-item'; a.href = link.url; a.target = '_blank'; a.title = link.name;
-                a.innerHTML = `<div class="icon-circle"><i class="${link.icon}"></i></div>`;
-                container.appendChild(a);
-            });
-        }
+       function renderIcons() {
+    container.innerHTML = '';
+
+    links.forEach(link => {
+        const a = document.createElement('a');
+
+        a.className = 'icon-item';
+        a.href = link.url;
+        a.target = '_blank';
+
+        // 不再使用浏览器原生 title
+        a.dataset.tooltip = link.name;
+
+        a.innerHTML = `
+            <div class="icon-circle">
+                <i class="${link.icon}"></i>
+            </div>
+        `;
+
+        // 自定义 tooltip
+        a.addEventListener('mouseenter', showTooltip);
+        a.addEventListener('mousemove', moveTooltip);
+        a.addEventListener('mouseleave', hideTooltip);
+
+        container.appendChild(a);
+    });
+}
 function renderEditList() {
     editList.innerHTML = '';
 
