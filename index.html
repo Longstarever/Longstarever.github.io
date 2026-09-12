@@ -701,18 +701,46 @@
                 container.appendChild(a);
             });
         }
-        function renderEditList() {
-            editList.innerHTML = '';
-            links.forEach((link, i) => {
-                const li = document.createElement('li');
-                li.innerHTML = `
-                    <input type="text" value="${link.name}" placeholder="名称" onchange="updateLink(${i},'name',this.value)" style="flex:1">
-                    <input type="text" value="${link.icon}" placeholder="图标" onchange="updateLink(${i},'icon',this.value)" style="flex:1">
-                    <input type="text" value="${link.url}" placeholder="网址" onchange="updateLink(${i},'url',this.value)" style="flex:2">
-                    <button class="btn btn-red" onclick="delLink(${i})"><i class="fa-solid fa-trash"></i></button>`;
-                editList.appendChild(li);
-            });
-        }
+function renderEditList() {
+    editList.innerHTML = '';
+
+    links.forEach((link, i) => {
+        const li = document.createElement('li');
+
+        li.innerHTML = `
+            <input
+                type="text"
+                value="${link.name}"
+                placeholder="网站名称"
+                oninput="updateLink(${i}, 'name', this.value)"
+            >
+
+            <input
+                type="text"
+                value="${link.icon}"
+                placeholder="Font Awesome 图标，例如 fa-brands fa-github"
+                oninput="updateLink(${i}, 'icon', this.value)"
+            >
+
+            <input
+                type="text"
+                value="${link.url}"
+                placeholder="https://example.com"
+                oninput="updateLink(${i}, 'url', this.value)"
+            >
+
+            <button
+                class="btn btn-red"
+                onclick="delLink(${i})"
+                title="删除快捷方式"
+            >
+                <i class="fa-solid fa-trash"></i>
+            </button>
+        `;
+
+        editList.appendChild(li);
+    });
+}
         function updateLink(i, k, v) { links[i][k] = v; save(); }
         function delLink(i) { if(confirm('确定删除?')) { links.splice(i,1); renderEditList(); save(); } }
         function addNewItem() { links.push({name:'新网站', url:'https://', icon:'fa-solid fa-link'}); renderEditList(); save(); }
