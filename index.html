@@ -782,14 +782,18 @@ body {
             }
         };
 
-        // --- 4. 网址管理 (不变) ---
+        // --- 4. 网址管理 ---
         const defaultLinks = [
             { name: "Bilibili", url: "https://www.bilibili.com", icon: "fa-brands fa-bilibili" },
             { name: "GitHub",   url: "https://github.com",       icon: "fa-brands fa-github" },
-            { name: "知乎",     url: "https://www.zhihu.com",    icon: "fa-brands fa-zhihu" },
-            { name: "邮箱",     url: "https://mail.qq.com",      icon: "fa-solid fa-envelope" }
+            { name: "Gemini",   url: "https://gemini.google.com", icon: "fa-solid fa-wand-magic-sparkles" },
+            { name: "1.tongji.edu.cn", url: "https://1.tongji.edu.cn", icon: "fa-solid fa-building-columns" },
+            { name: "canvas.tongji.edu.cn", url: "https://canvas.tongji.edu.cn", icon: "fa-solid fa-graduation-cap" },
+            { name: "ChatGPT",  url: "https://chatgpt.com",      icon: "fa-brands fa-openai" }
         ];
-        let links = JSON.parse(localStorage.getItem('myLinks')) || defaultLinks;
+        // 新版本使用新的存储键，让已访问过的浏览器也能载入更新后的默认快捷方式。
+        const linksStorageKey = 'myLinks_v2';
+        let links = JSON.parse(localStorage.getItem(linksStorageKey)) || defaultLinks;
         const container = document.getElementById('iconContainer');
         // --- 自定义图标悬停提示 ---
 
@@ -906,7 +910,7 @@ function renderEditList() {
         function updateLink(i, k, v) { links[i][k] = v; save(); }
         function delLink(i) { if(confirm('确定删除?')) { links.splice(i,1); renderEditList(); save(); } }
         function addNewItem() { links.push({name:'新网站', url:'https://', icon:'fa-solid fa-link'}); renderEditList(); save(); }
-        function save() { localStorage.setItem('myLinks', JSON.stringify(links)); renderIcons(); }
+        function save() { localStorage.setItem(linksStorageKey, JSON.stringify(links)); renderIcons(); }
         function openModal() { renderEditList(); modal.style.display = 'flex'; }
         function closeModal() { modal.style.display = 'none'; }
         renderIcons();
